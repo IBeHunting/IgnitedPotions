@@ -1,0 +1,19 @@
+disable-potions:
+# - DAMAGE_RESISTANCE
+# - HEALTH_BOOST
+
+potion-ingredients:
+  FAST_DIGGING: COOKIE
+  SLOW_DIGGING: OBSIDIAN
+  ABSORPTION: GOLDEN_APPLE
+  CONFUSION: RAW_CHICKEN
+  BLINDNESS: PUMPKIN
+  DAMAGE_RESISTANCE: IRON_INGOT
+  SATURATION: COOKED_BEEF
+  HEALTH_BOOST: APPLE
+  HUNGER: ROTTEN_FLESH
+  WITHER: COAL
+
+# Want players to brew tier III potions? Add in something in place of glowstone dust
+extra-tiers:
+  3: NETHER_STAR
