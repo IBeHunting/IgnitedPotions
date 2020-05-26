@@ -76,7 +76,7 @@ public class ActiveBrew
       BREWS.remove(loc);
       this.stand.setBrewingTime(-1);
       this.task.cancel();
-      CustomBrewEvent event = new CustomBrewEvent(player, stand.getInventory().getContents());
+      CustomBrewEvent event = new CustomBrewEvent(player, stand.getInventory());
       Bukkit.getPluginManager().callEvent(event);
       if (!event.isCancelled())
       {
