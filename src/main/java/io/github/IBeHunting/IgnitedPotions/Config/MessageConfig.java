@@ -1,9 +1,7 @@
 package io.github.IBeHunting.IgnitedPotions.Config;
 
-import io.github.IBeHunting.IgnitedPotions.CustomPotions.PotionInfo;
 import io.github.IBeHunting.IgnitedPotions.PotionsPlugin;
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.potion.PotionEffectType;
 
@@ -44,6 +42,11 @@ public class MessageConfig implements PluginConfig
       return getMessage("potion-names." + type.getName(), "Potion of " + PotionsPlugin.util().format(type.getName()));
    }
 
+   public String getStandName()
+   {
+      return getMessage("brewing-stand-title", "&aBrewing Stand");
+   }
+
    private String getMessage(String message, String def)
    {
       return ChatColor.translateAlternateColorCodes('&',
@@ -57,17 +60,11 @@ public class MessageConfig implements PluginConfig
 
    public void load()
    {
-      try
+      if (!file.exists())
       {
-         if (!file.exists()) {
-            PotionsPlugin.getInstance().saveResource("messages.yml", true);
-         }
-         conf.load(file);
+         PotionsPlugin.getInstance().saveResource("messages.yml", true);
       }
-      catch (IOException | InvalidConfigurationException e)
-      {
-         e.printStackTrace();
-      }
+      this.conf = YamlConfiguration.loadConfiguration(file);
    }
 
    public void save()

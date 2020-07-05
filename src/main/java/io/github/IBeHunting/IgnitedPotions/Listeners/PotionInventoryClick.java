@@ -1,66 +1,133 @@
 package io.github.IBeHunting.IgnitedPotions.Listeners;
 
 import io.github.IBeHunting.IgnitedPotions.Config.Config;
-import io.github.IBeHunting.IgnitedPotions.CustomPotions.Brewing;
+import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomBrewingStand;
 import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomPotion;
 import io.github.IBeHunting.IgnitedPotions.Events.ActiveBrew;
+import io.github.IBeHunting.IgnitedPotions.PotionsPlugin;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.BrewerInventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
-public class PotionInventoryClick implements Listener
-{
-   private static final int INGREDIENT_SLOT = 3;
+public class PotionInventoryClick implements Listener {
    @EventHandler
-   public void onClick(InventoryClickEvent event) {
-      BrewerInventory inv;
-      Player player;
+   public void onInventoryClick(InventoryClickEvent event) {
+      InventoryHolder holder = event.getInventory().getHolder();
+      if (event.getWhoClicked() instanceof Player
+              && holder instanceof CustomBrewingStand
+              && event.getClickedInventory() != null) {
+         brewingClick(event, (CustomBrewingStand) holder);
+      }
+   }
 
-      /* Player must be interacting with the ingredient slot of a brewing stand */
-      if (!(event.getWhoClicked() instanceof Player
-              && event.getInventory() instanceof BrewerInventory
-              && event.getClickedInventory() != null))
-      {
+   private void brewingClick(InventoryClickEvent event, CustomBrewingStand stand) {
+      Player player = (Player) event.getWhoClicked();
+
+      if (!isValidClick(event)) {
+         event.setCancelled(true);
          return;
       }
-      player = (Player) event.getWhoClicked();
-      inv = (BrewerInventory) event.getInventory();
 
-      if (preformClick(event))
-      {
+      /* Allow user to shift click potions into potion slots */
+      if (event.getClick().isShiftClick() && event.getInventory() != event.getClickedInventory()) {
          event.setCancelled(true);
-         if (brewable(inv) && checkPermission(player, inv.getIngredient()) && !isDisabled(inv.getIngredient()))
+         handleShiftClick(event, stand);
+      }
+
+      /* Set the display of the brewing stand to be consistent with the inventory */
+      Bukkit.getScheduler().runTaskLater(PotionsPlugin.getInstance(), () -> {
+         updateBrewingStands(stand);
+         if (canStartBrew(player, stand))
          {
-            new ActiveBrew(inv.getHolder(), (Player)event.getWhoClicked()).start();
+            new ActiveBrew(stand, player).start();
+         }
+      }, 1);
+
+   }
+
+   private void updateBrewingStands(CustomBrewingStand stand)
+   {
+      int potion_slot = 0;
+      stand.getStand().getInventory().setIngredient(stand.getIngredient());
+      for (ItemStack potion : stand.getPotions())
+      {
+         stand.getStand().getInventory().setItem(potion_slot++, potion);
+      }
+   }
+
+   private boolean canStartBrew(Player player, CustomBrewingStand stand)
+   {
+      ItemStack ingredient;
+      if (!brewable(stand))
+      {
+         return false;
+      }
+      ingredient = stand.getIngredient();
+      return  PotionsPlugin.util().checkPermission(player, ingredient)
+              && !isDisabled(ingredient)
+              && !ActiveBrew.isActive(stand.getStand().getLocation());
+   }
+
+   private void tryAddIngredient(InventoryClickEvent event, CustomBrewingStand stand, ItemStack ing)
+   {
+      if (stand.getIngredient() == null || stand.getIngredient().getType() == Material.AIR)
+      {
+         event.setCurrentItem(new ItemStack(Material.AIR));
+         stand.setIngredient(ing);
+      }
+   }
+
+   private void tryAddPotion(InventoryClickEvent event, CustomBrewingStand stand, ItemStack potion)
+   {
+      ItemStack[] orig = stand.getPotions();
+      for (int i = 0; i < orig.length; i++)
+      {
+         if (orig[i] == null || orig[i].getType() == Material.AIR)
+         {
+            event.setCurrentItem(new ItemStack(Material.AIR));
+            stand.setPotion(i, potion);
+            return;
          }
       }
    }
 
-   private boolean checkPermission(Player player, ItemStack ingredient)
+   private void handleShiftClick(InventoryClickEvent event, CustomBrewingStand stand)
    {
-      PotionEffectType type = Config.getInstance().getResultingPotion(ingredient);
-      if (type == null)
+      ItemStack clicked = event.getCurrentItem();
+      if (clicked == null)
       {
-         return true;
+         return;
       }
-      switch(type.getId())
+      if (clicked.getType() == Material.POTION)
       {
-         case 3: return player.hasPermission("potions.brew.haste");
-         case 4: return player.hasPermission("potions.brew.mining_fatigue");
-         case 9: return player.hasPermission("potions.brew.nausea");
-         case 11: return player.hasPermission("potions.brew.resistance");
-         case 15: return player.hasPermission("potions.brew.blindness");
-         case 17: return player.hasPermission("potions.brew.hunger");
-         case 20: return player.hasPermission("potions.brew.wither");
-         case 21: return player.hasPermission("potions.brew.health_boost");
-         case 22: return player.hasPermission("potions.brew.absorption");
-         case 23: return player.hasPermission("potions.brew.saturation");
-         default: return true;
+         tryAddPotion(event, stand, clicked);
+      }
+      else
+      {
+         tryAddIngredient(event, stand, clicked);
+      }
+   }
+
+   private boolean isValidClick(InventoryClickEvent event)
+   {
+      switch(event.getClick())
+      {
+         case RIGHT:
+         case LEFT:
+         case NUMBER_KEY:
+         case DROP:
+         case SHIFT_LEFT:
+         case SHIFT_RIGHT:
+            return event.getClickedInventory() != event.getInventory()
+                    || CustomBrewingStand.isIngredientSlot(event.getSlot())
+                    || CustomBrewingStand.isPotionSlot(event.getSlot());
+         default: return false;
       }
    }
 
@@ -74,124 +141,17 @@ public class PotionInventoryClick implements Listener
       return Config.getInstance().isDisabled(effect);
    }
 
-
-   /*
-    * Forces non-vanilla ingredients into the brewing stand
-    * Returns true if a new item was added to the ingredient slot
-    */
-   private boolean preformClick(InventoryClickEvent event)
-   {
-      BrewerInventory inv = (BrewerInventory) event.getInventory();
-      ItemStack cursor = event.getCursor();
-      if (event.getClickedInventory() == inv
-              && event.getSlot() == INGREDIENT_SLOT
-              && canStartCustomBrew(cursor))
-      {
-         switch(event.getClick())
-         {
-            case LEFT: return leftClick(inv, event);
-            case RIGHT: return rightClick(inv, event);
-         }
-      }
-      if (event.getClickedInventory() != event.getInventory()
-              && isEmpty(inv.getIngredient())
-              && event.getClick().isShiftClick()
-              && canStartCustomBrew(event.getCurrentItem()))
-      {
-         inv.setIngredient(event.getCurrentItem());
-         event.setCurrentItem(null);
-         return true;
-      }
-      return false;
-   }
-
-   private boolean leftClick(BrewerInventory inv, InventoryClickEvent event)
-   {
-      ItemStack original = inv.getIngredient();
-      ItemStack cursor = event.getCursor();
-      int transfer;
-
-      if (original == null)
-      {
-         inv.setIngredient(cursor);
-         event.setCursor(null);
-         return true;
-      }
-      if (cursor.isSimilar(original))
-      {
-         event.setCancelled(true);
-         transfer = Math.min(Math.max(0, original.getMaxStackSize() - original.getAmount()), cursor.getAmount());
-         increment(original, transfer);
-         increment(cursor, -transfer);
-
-         return false;
-      }
-      event.setCursor(original);
-      inv.setIngredient(cursor);
-      return true;
-   }
-
-   private boolean rightClick(BrewerInventory inv, InventoryClickEvent event)
-   {
-      ItemStack original = inv.getIngredient();
-      ItemStack cursor = event.getCursor();
-
-      if (isEmpty(original))
-      {
-         original = new ItemStack(cursor.getType(), 1, cursor.getDurability());
-         original.setItemMeta(cursor.getItemMeta());
-         inv.setIngredient(original);
-         increment(cursor, -1);
-         return true;
-      }
-      if (original.isSimilar(cursor))
-      {
-         event.setCancelled(true);
-         increment(original, 1);
-         increment(cursor, -1);
-         return false;
-      }
-      event.setCursor(original);
-      inv.setIngredient(cursor);
-      return true;
-   }
-
-   private boolean brewable(BrewerInventory inv)
+   private boolean brewable(CustomBrewingStand stand)
    {
       CustomPotion pot;
-      for (int i = 0; i < 3; i++)
+      for (ItemStack item : stand.getPotions())
       {
-         pot = CustomPotion.fromItem(inv.getContents()[i]);
-         if (pot != null && pot.canBeBrewed(inv.getIngredient()))
+         pot = CustomPotion.fromItem(item);
+         if (pot != null && pot.canBeBrewed(stand.getIngredient()))
          {
             return true;
          }
       }
       return false;
-   }
-
-   private boolean isEmpty (ItemStack item)
-   {
-      return item == null || item.getType() == Material.AIR;
-   }
-
-   private boolean canStartCustomBrew(ItemStack item)
-   {
-      Brewing i = Brewing.getInstance();
-      return i.isIngredient(item) || i.isModifier(item);
-   }
-
-   private void increment (ItemStack item, int amount)
-   {
-      int result = item.getAmount() + amount;
-
-      if (result <= 0)
-      {
-         item.setAmount(1);
-         item.setType(Material.AIR);
-      }
-
-      result = Math.min(result, item.getMaxStackSize());
-      item.setAmount(result);
    }
 }

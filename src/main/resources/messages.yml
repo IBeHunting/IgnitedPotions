@@ -1,7 +1,20 @@
 reload-message: "&aPlugin has been reloaded"
 save-message: "&aPlugin has been saved"
 
+brewing-stand-title: "&aBrewing Stand"
+
 potion-names:
+  INCREASE_DAMAGE: "Potion of Strength"
+  SPEED: "Potion of Swiftness"
+  FIRE_RESISTANCE: "Potion of Fire Resistance"
+  HARM: "Potion of Harming"
+  HEAL: "Potion of Healing"
+  NIGHT_VISION: "Potion of Night Vision"
+  WATER_BREATHING: "Potion of Water Breathing"
+  JUMP: "Potion of Leaping"
+  WEAKNESS: "Potion of Weakness"
+  SLOW: "Potion of Slowness"
+  POISON: "Potion of Poison"
   FAST_DIGGING: "Potion of Haste"
   SLOW_DIGGING: "Potion of Mining Fatigue"
   ABSORPTION: "Potion of Absorption"

@@ -1,7 +1,7 @@
 name: IgnitedPotions
-description: Adds more brewable potion types
+description: A re-model of minecraft's brewing, with permissions, new effects, and custom modifiers.
 author: IBeHunting
-version: 1.0.1
+version: 1.1.0
 api-version: 1.8.8
 main: io.github.IBeHunting.IgnitedPotions.PotionsPlugin
 
@@ -34,6 +34,16 @@ permissions:
       potions.brew.saturation: true
       potions.brew.hunger: true
       potions.brew.wither: true
+      potions.brew.strength: true
+      potions.brew.speed: true
+      potions.brew.fire_resistance: true
+      potions.brew.instant_health: true
+      potions.brew.jump_boost: true
+      potions.brew.regeneration: true
+      potions.brew.poison: true
+      potions.brew.water_breathing: true
+      potions.brew.night_vision: true
+
   potions.brew.haste:
     default: op
   potions.brew.mining_fatigue:
@@ -54,3 +64,21 @@ permissions:
     default: op
   potions.brew.wither:
     default: op
+  potions.brew.strength:
+    default: true
+  potions.brew.speed:
+    default: true
+  potions.brew.fire_resistance:
+    default: true
+  potions.brew.instant_health:
+    default: true
+  potions.brew.jump_boost:
+    default: true
+  potions.brew.regeneration:
+    default: true
+  potions.brew.poison:
+    default: true
+  potions.brew.night_vision:
+    default: true
+  potions.brew.water_breathing:
+    default: true

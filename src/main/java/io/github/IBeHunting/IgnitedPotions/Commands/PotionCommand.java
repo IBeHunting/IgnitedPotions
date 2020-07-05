@@ -3,7 +3,6 @@ package io.github.IBeHunting.IgnitedPotions.Commands;
 import io.github.IBeHunting.IgnitedPotions.Config.Config;
 import io.github.IBeHunting.IgnitedPotions.Config.MessageConfig;
 import io.github.IBeHunting.IgnitedPotions.PotionsPlugin;
-import io.github.IBeHunting.IgnitedPotions.Util.PluginUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,7 +13,6 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 public class PotionCommand implements CommandExecutor
 {
@@ -75,11 +73,11 @@ public class PotionCommand implements CommandExecutor
    {
 
       Map<String, ItemStack> recipes = new HashMap<>();
-      for (Map.Entry<PotionEffectType, ItemStack> entry : Config.getInstance().getRecipies().entrySet())
+      for (Map.Entry<ItemStack, PotionEffectType> entry : Config.getInstance().getRecipies().entrySet())
       {
-         if (PotionsPlugin.util().checkPermission(sender, entry.getValue()))
+         if (PotionsPlugin.util().checkPermission(sender, entry.getKey()))
          {
-            recipes.put(MessageConfig.getInstance().getPotionName(entry.getKey()), entry.getValue());
+            recipes.put(MessageConfig.getInstance().getPotionName(entry.getValue()), entry.getKey());
          }
       }
 

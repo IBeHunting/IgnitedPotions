@@ -3,6 +3,15 @@ disable-potions:
 # - HEALTH_BOOST
 
 potion-ingredients:
+  FIRE_RESISTANCE: MAGMA_CREAM
+  HEAL: SPECKLED_MELON
+  JUMP: RABBIT_FOOT
+  INCREASE_DAMAGE: BLAZE_POWDER
+  SPEED: SUGAR
+  POISON: SPIDER_EYE
+  REGENERATION: GHAST_TEAR
+  NIGHT_VISION: GOLDEN_CARROT
+  WATER_BREATHING: RAW_FISH:3
   FAST_DIGGING: COOKIE
   SLOW_DIGGING: OBSIDIAN
   ABSORPTION: GOLDEN_APPLE
@@ -17,3 +26,12 @@ potion-ingredients:
 # Want players to brew tier III potions? Add in something in place of glowstone dust
 extra-tiers:
   3: NETHER_STAR
+
+# If set to true,
+#   - Applying an amplifier (glowstone) to a potion will remove its extended duration
+#   - Applying an extender (redstone) to a potion will remove its amplifier
+conflicting_amplifier_duration: false
+
+# The time in ticks it takes for a brew to complete
+#   - Defaults to 400 ticks (20 seconds), the duration for vanilla brewing
+brewing_time: 400

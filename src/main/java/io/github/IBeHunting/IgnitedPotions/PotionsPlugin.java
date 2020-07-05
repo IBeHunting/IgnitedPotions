@@ -6,6 +6,7 @@ import io.github.IBeHunting.IgnitedPotions.Config.Config;
 import io.github.IBeHunting.IgnitedPotions.Config.MessageConfig;
 import io.github.IBeHunting.IgnitedPotions.Config.PluginConfig;
 import io.github.IBeHunting.IgnitedPotions.Listeners.PotionInventoryClick;
+import io.github.IBeHunting.IgnitedPotions.Listeners.StandInteraction;
 import io.github.IBeHunting.IgnitedPotions.Util.PluginUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
@@ -83,7 +84,7 @@ public class PotionsPlugin extends JavaPlugin
    private void registerEvents()
    {
       PluginManager manager = Bukkit.getPluginManager();
-
+      manager.registerEvents(new StandInteraction(), this);
       manager.registerEvents(new PotionInventoryClick(),this);
    }
 }

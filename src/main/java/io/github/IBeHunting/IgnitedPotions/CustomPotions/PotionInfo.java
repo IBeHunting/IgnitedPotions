@@ -12,29 +12,29 @@ public class PotionInfo
    static
    {
       INFO = new HashMap<>();
-      INFO.put(PotionEffectType.SPEED, new PotionInfo(true, PotionColor.LIGHT_BLUE, 180, 480));
-      INFO.put(PotionEffectType.INCREASE_DAMAGE, new PotionInfo(true, PotionColor.PURPLE, 180, 480));
-      INFO.put(PotionEffectType.REGENERATION, new PotionInfo(true, PotionColor.PINK, 45, 120));
-      INFO.put(PotionEffectType.FIRE_RESISTANCE, new PotionInfo(false, PotionColor.ORANGE, 180, 480));
-      INFO.put(PotionEffectType.POISON, new PotionInfo(true, PotionColor.GREEN, 45, 120));
-      INFO.put(PotionEffectType.HEAL, new PotionInfo(true, PotionColor.RED, 0, 0));
-      INFO.put(PotionEffectType.HARM, new PotionInfo(true, PotionColor.DARK_PURPLE, 0, 0));
-      INFO.put(PotionEffectType.JUMP, new PotionInfo(true, PotionColor.TURQUOISE, 180, 480));
-      INFO.put(PotionEffectType.INVISIBILITY, new PotionInfo(false, PotionColor.LIGHT_GRAY, 180, 480));
-      INFO.put(PotionEffectType.NIGHT_VISION, new PotionInfo(false, PotionColor.DARK_BLUE, 180, 480));
-      INFO.put(PotionEffectType.WATER_BREATHING, new PotionInfo(false, PotionColor.BLUE, 180, 480));
-      INFO.put(PotionEffectType.WEAKNESS, new PotionInfo(true, PotionColor.BLACK, 90, 240));
-      INFO.put(PotionEffectType.SLOW, new PotionInfo(true, PotionColor.DARK_GRAY, 90, 240));
-      INFO.put(PotionEffectType.FAST_DIGGING, new PotionInfo(true, PotionColor.LIGHT_GRAY, 180, 480));
-      INFO.put(PotionEffectType.SLOW_DIGGING, new PotionInfo(true, PotionColor.BLACK, 90, 240));
-      INFO.put(PotionEffectType.HUNGER, new PotionInfo(true, PotionColor.GREEN, 90, 240));
-      INFO.put(PotionEffectType.SATURATION, new PotionInfo(true, PotionColor.TURQUOISE, 180, 480));
-      INFO.put(PotionEffectType.ABSORPTION, new PotionInfo(true, PotionColor.ORANGE, 45, 120));
-      INFO.put(PotionEffectType.HEALTH_BOOST, new PotionInfo(true, PotionColor.RED, 90, 240));
-      INFO.put(PotionEffectType.BLINDNESS, new PotionInfo(true, PotionColor.DARK_GRAY, 45, 120));
-      INFO.put(PotionEffectType.CONFUSION, new PotionInfo(true, PotionColor.DARK_BLUE, 45, 120));
-      INFO.put(PotionEffectType.DAMAGE_RESISTANCE, new PotionInfo(true, PotionColor.LIGHT_GRAY, 180, 480));
-      INFO.put(PotionEffectType.WITHER, new PotionInfo(true, PotionColor.BLACK, 45, 120));
+      INFO.put(PotionEffectType.SPEED,             new PotionInfo(true,  PotionColor.LIGHT_BLUE, 180, 480));
+      INFO.put(PotionEffectType.INCREASE_DAMAGE,   new PotionInfo(true,  PotionColor.PURPLE,     180, 480));
+      INFO.put(PotionEffectType.REGENERATION,      new PotionInfo(true,  PotionColor.PINK,       45,  120));
+      INFO.put(PotionEffectType.FIRE_RESISTANCE,   new PotionInfo(false, PotionColor.ORANGE,     180, 480));
+      INFO.put(PotionEffectType.POISON,            new PotionInfo(true,  PotionColor.GREEN,      45,  120));
+      INFO.put(PotionEffectType.HEAL,              new PotionInfo(true,  PotionColor.RED,        0,   0));
+      INFO.put(PotionEffectType.HARM,              new PotionInfo(true,  PotionColor.DARK_PURPLE,0,   0));
+      INFO.put(PotionEffectType.JUMP,              new PotionInfo(true,  PotionColor.TURQUOISE,  180, 480));
+      INFO.put(PotionEffectType.INVISIBILITY,      new PotionInfo(false, PotionColor.LIGHT_GRAY, 180, 480));
+      INFO.put(PotionEffectType.NIGHT_VISION,      new PotionInfo(false, PotionColor.DARK_BLUE,  180, 480));
+      INFO.put(PotionEffectType.WATER_BREATHING,   new PotionInfo(false, PotionColor.BLUE,       180, 480));
+      INFO.put(PotionEffectType.WEAKNESS,          new PotionInfo(true,  PotionColor.BLACK,      90,  240));
+      INFO.put(PotionEffectType.SLOW,              new PotionInfo(true,  PotionColor.DARK_GRAY,  90,  240));
+      INFO.put(PotionEffectType.FAST_DIGGING,      new PotionInfo(true,  PotionColor.LIGHT_GRAY, 180, 480));
+      INFO.put(PotionEffectType.SLOW_DIGGING,      new PotionInfo(true,  PotionColor.BLACK,      90,  240));
+      INFO.put(PotionEffectType.HUNGER,            new PotionInfo(true,  PotionColor.GREEN,      90,  240));
+      INFO.put(PotionEffectType.SATURATION,        new PotionInfo(true,  PotionColor.TURQUOISE,  180, 480));
+      INFO.put(PotionEffectType.ABSORPTION,        new PotionInfo(true,  PotionColor.ORANGE,     45,  120));
+      INFO.put(PotionEffectType.HEALTH_BOOST,      new PotionInfo(true,  PotionColor.RED,        90,  240));
+      INFO.put(PotionEffectType.BLINDNESS,         new PotionInfo(true,  PotionColor.DARK_GRAY,  45,  120));
+      INFO.put(PotionEffectType.CONFUSION,         new PotionInfo(true,  PotionColor.DARK_BLUE,  45,  120));
+      INFO.put(PotionEffectType.DAMAGE_RESISTANCE, new PotionInfo(true,  PotionColor.LIGHT_GRAY, 180, 480));
+      INFO.put(PotionEffectType.WITHER,            new PotionInfo(true,  PotionColor.BLACK,      45,  120));
    }
 
    public static boolean hasTiers (PotionEffectType type)

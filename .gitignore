@@ -1,6 +1,6 @@
 # Extra intellij Files
-.idea/
-.target/
+.idea/*
+target/*
 
 # Java Class files
 *.class

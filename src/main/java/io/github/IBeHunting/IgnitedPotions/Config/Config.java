@@ -1,15 +1,18 @@
 package io.github.IBeHunting.IgnitedPotions.Config;
 
 import io.github.IBeHunting.IgnitedPotions.PotionsPlugin;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Config implements PluginConfig
@@ -19,8 +22,8 @@ public class Config implements PluginConfig
    private FileConfiguration config;
    private File file;
 
-   private Map<String, PotionEffectType> ingredients;
-   private Map<String, Integer> custom_modifiers;
+   private Map<ItemStack, PotionEffectType> ingredients;
+   private Map<ItemStack, Integer> custom_modifiers;
 
    public Config()
    {
@@ -36,110 +39,136 @@ public class Config implements PluginConfig
 
    public void load()
    {
-      PotionsPlugin.getInstance().reloadConfig();
-      this.config = PotionsPlugin.getInstance().getConfig();
+      if (!file.exists())
+      {
+         PotionsPlugin.getInstance().saveResource("config.yml", true);
+      }
+      this.config = YamlConfiguration.loadConfiguration(file);
+
       loadIngredients();
       loadModifiers();
    }
 
+   private ItemStack parseItem(String serialized)
+   {
+      try
+      {
+         if (serialized.contains(":"))
+         {
+            return new ItemStack(
+                    Material.valueOf(serialized.split(":")[0]),
+                    Short.valueOf(serialized.split(":")[1])
+            );
+         }
+         else
+         {
+            return new ItemStack(Material.valueOf(serialized));
+         }
+      }
+      catch (IllegalArgumentException | NullPointerException e)
+      {
+         Bukkit.getLogger().warning("Unable to parse ItemStack " + serialized);
+         return null;
+      }
+   }
+
    private void loadIngredients()
    {
-      ConfigurationSection section = config.getConfigurationSection("potion-ingredients");
-      PotionEffectType e_type;
-      Material i_type;
-      short i_data;
+      ConfigurationSection section;
+      String serialized;
+      ItemStack ingredient;
+      PotionEffectType result;
       this.ingredients = new HashMap<>();
-      if (section == null)
+      if (!config.isConfigurationSection("potion-ingredients"))
       {
-         PotionsPlugin.getInstance().getLogger().warning("No potion-ingredients config section");
+         Bukkit.getLogger().warning("potion ingredients not found in config");
          return;
       }
+      section = config.getConfigurationSection("potion-ingredients");
       for (String effect : section.getKeys(false))
       {
-         try
+         result = PotionEffectType.getByName(effect);
+         if (result == null)
          {
-            e_type = PotionEffectType.getByName(effect);
-            i_type = Material.valueOf(section.getString(effect, "AIR"));
-            i_data = (short) section.getInt(effect + ".data", 0);
-            ingredients.put(i_type.name() + ":" + i_data, e_type);
+            Bukkit.getLogger().warning("Potion effect type " + effect + " in config is invalid");
+            continue;
          }
-         catch(IllegalArgumentException e)
+         serialized = section.getString(effect);
+         if (serialized == null)
          {
-            PotionsPlugin.getInstance().getLogger().warning("Bad value type found in ingredients config");
+            Bukkit.getLogger().warning("Invalid config entry on ingredient for " + effect);
+            continue;
+         }
+         ingredient = parseItem(serialized);
+         if (ingredient != null)
+         {
+            this.ingredients.put(ingredient, result);
          }
       }
    }
 
    private void loadModifiers()
    {
-      ConfigurationSection section = config.getConfigurationSection("extra-tiers");
-      Material i_type;
-      short i_data;
+      ConfigurationSection section;
       int level;
+      ItemStack modifier;
       this.custom_modifiers = new HashMap<>();
-      if (section == null)
+      if (!config.isConfigurationSection("extra-tiers"))
       {
-         PotionsPlugin.getInstance().getLogger().warning("No custom-modifier config section");
+         Bukkit.getLogger().warning("No custom-modifier config section");
          return;
       }
-      for (String key : section.getKeys(false))
+      section = config.getConfigurationSection("extra-tiers");
+      for (String tier : section.getKeys(false))
       {
          try
          {
-            level = Integer.valueOf(key);
-            i_type = Material.valueOf(section.getString(key, "AIR"));
-            i_data = (short) section.getInt(key + ".data", 0);
-
-            custom_modifiers.put(i_type.name() + ":" + i_data, level);
+            level = Integer.valueOf(tier);
          }
          catch (IllegalArgumentException e)
          {
-            PotionsPlugin.getInstance().getLogger().warning("Bad value type found in modifiers config");
+            Bukkit.getLogger().warning("Invalid tier value in config");
+            continue;
+         }
+         modifier = parseItem(section.getString(tier));
+         if (modifier != null)
+         {
+            this.custom_modifiers.put(modifier, level);
          }
       }
    }
 
    public PotionEffectType getResultingPotion(ItemStack item)
    {
-      String s = item.getType().name() + ":" + item.getDurability();
-      return ingredients.get(s);
+      /* Create a new item with amount set to 1 */
+      ItemStack type = new ItemStack(item.getType(), 1, item.getDurability());
+      return ingredients.get(type);
    }
 
-   public Map<PotionEffectType, ItemStack> getRecipies()
+   public Map<ItemStack, PotionEffectType> getRecipies()
    {
-      Map<PotionEffectType, ItemStack> recipes = new HashMap<>();
-      Material mat;
-      short data;
-      for (Map.Entry<String, PotionEffectType> entry : ingredients.entrySet())
-      {
-         try
-         {
-            if (!entry.getKey().contains(":"))
-            {
-               mat = Material.valueOf(entry.getKey());
-               data = 0;
-            }
-            else
-            {
-               mat = Material.valueOf(entry.getKey().split(":")[0]);
-               data = Short.valueOf(entry.getKey().split(":")[1]);
-            }
-            recipes.put(entry.getValue(), new ItemStack(mat, 1, data));
-         }
-         catch (IllegalArgumentException e) { }
-      }
-      return recipes;
+      return ingredients;
    }
 
    public int getModifierLevel (ItemStack item)
    {
-      String s = item.getType().name() + ":" + item.getDurability();
-      return custom_modifiers.getOrDefault(s, -1);
+      ItemStack type = new ItemStack(item.getType(), 1, item.getDurability());
+      return custom_modifiers.getOrDefault(type, -1);
    }
 
    public boolean isDisabled(PotionEffectType type)
    {
       return config.getStringList("disable-potions").contains(type.getName());
+   }
+
+   public boolean usingConflictingModifiers()
+   {
+      return config.getBoolean("conflicting_amplifier_duration", false);
+   }
+
+   public int getBrewingTicks()
+   {
+      return config.getInt("brewing_time", 400);
    }
 
    public void save()

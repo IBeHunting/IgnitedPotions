@@ -62,24 +62,43 @@ public class PluginUtils
 
    public boolean checkPermission(CommandSender player, ItemStack ingredient)
    {
-      PotionEffectType type = Config.getInstance().getResultingPotion(ingredient);
-      if (type == null)
+      String perm = getPermission(ingredient);
+      if (perm == null)
       {
          return true;
       }
-      switch(type.getId())
+      return player.hasPermission(getPermission(ingredient));
+   }
+
+   public String getPermission (ItemStack ingredient)
+   {
+      PotionEffectType type = Config.getInstance().getResultingPotion(ingredient);
+      if (type == null)
       {
-         case 3: return player.hasPermission("potions.brew.haste");
-         case 4: return player.hasPermission("potions.brew.mining_fatigue");
-         case 9: return player.hasPermission("potions.brew.nausea");
-         case 11: return player.hasPermission("potions.brew.resistance");
-         case 15: return player.hasPermission("potions.brew.blindness");
-         case 17: return player.hasPermission("potions.brew.hunger");
-         case 20: return player.hasPermission("potions.brew.wither");
-         case 21: return player.hasPermission("potions.brew.health_boost");
-         case 22: return player.hasPermission("potions.brew.absorption");
-         case 23: return player.hasPermission("potions.brew.saturation");
-         default: return true;
+         return null;
+      }
+      switch (type.getId())
+      {
+         case 1: return "potions.brew.speed";
+         case 3: return "potions.brew.haste";
+         case 4: return "potions.brew.mining_fatigue";
+         case 5: return "potions.brew.strength";
+         case 6: return "potions.brew.instant_health";
+         case 8: return "potions.brew.jump_boost";
+         case 9: return "potions.brew.nausea";
+         case 10: return "potions.brew.regeneration";
+         case 11: return "potions.brew.resistance";
+         case 12: return "potions.brew.fire_resistance";
+         case 13: return "potions.brew.water_breathing";
+         case 15: return "potions.brew.blindness";
+         case 16: return "potions.brew.night_vision";
+         case 17: return "potions.brew.hunger";
+         case 19: return "potions.brew.poison";
+         case 20: return "potions.brew.wither";
+         case 21: return "potions.brew.health_boost";
+         case 22: return "potions.brew.absorption";
+         case 23: return "potions.brew.saturation";
+         default: return null;
       }
    }
 }

@@ -24,16 +24,16 @@ public class Brewing
 
    public CustomPotion[] apply(CustomPotion[] orig, ItemStack ingredient)
    {
-      CustomPotion[] results = new CustomPotion[3];
+      CustomPotion[] results = new CustomPotion[orig.length];
       CustomPotion cp;
-      for (int i = 0; i < 3; i++)
+      for (int i = 0; i < orig.length; i++)
       {
          cp = orig[i];
          if (cp == null)
          {
             continue;
          }
-         if (cp.isAwkwardPotion())
+         if (cp.isAwkward())
          {
             results[i] = handleAwkward(cp, ingredient);
          }
@@ -69,6 +69,9 @@ public class Brewing
          case GLOWSTONE_DUST:
             orig.applyVanillaGlowstone();
             return orig;
+         case FERMENTED_SPIDER_EYE:
+            orig.corrupt();
+            return orig;
       }
       /* Custom tier modifiers */
       level = Config.getInstance().getModifierLevel(ingredient);
@@ -83,11 +86,17 @@ public class Brewing
    {
       switch(ingredient.getType())
       {
-         case NETHER_WARTS: /* Make awkward potion */
+         case NETHER_STALK:
+            /* Make awkward potion */
             return new CustomPotion(null, 0, false, false);
-         case GLOWSTONE_DUST: /* Make thick potion */
+         case GLOWSTONE_DUST:
+            /* Make thick potion */
             return new CustomPotion(null, 2, false, false);
-         default: /* Make mundane Potion */
+         case FERMENTED_SPIDER_EYE:
+            /* Make Potion of weakness */
+            return new CustomPotion(PotionEffectType.WEAKNESS);
+         default:
+            /* Make mundane Potion */
             return new CustomPotion(null, 1, true, false);
       }
    }

@@ -2,7 +2,6 @@ package io.github.IBeHunting.IgnitedPotions.CustomPotions;
 
 import io.github.IBeHunting.IgnitedPotions.Config.Config;
 import io.github.IBeHunting.IgnitedPotions.Config.MessageConfig;
-import io.github.IBeHunting.IgnitedPotions.PotionsPlugin;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -66,8 +65,8 @@ public class CustomPotion
    {
       this.type = typeFromData(data);
       this.tier = tierFromData(data);
-      this.extended = (data | 64) > 0;
-      this.splash = (data | 16384) > 0;
+      this.extended = (data & 64) > 0;
+      this.splash = (data & 16384) > 0;
    }
 
    public PotionEffectType getType()
@@ -78,13 +77,19 @@ public class CustomPotion
    public void applyVanillaGlowstone()
    {
       this.tier = 2;
-      this.extended = false;
+      if (Config.getInstance().usingConflictingModifiers())
+      {
+         this.extended = false;
+      }
    }
 
    public void applyVanillaRedstone()
    {
-      this.tier = 1;
       this.extended = true;
+      if (Config.getInstance().usingConflictingModifiers())
+      {
+         this.tier = 1;
+      }
    }
 
    public void applyVanillaGunpowder()
@@ -92,10 +97,36 @@ public class CustomPotion
       this.splash = true;
    }
 
+   public void corrupt()
+   {
+      if (type == null)
+      {
+         return;
+      }
+      switch(type.getId())
+      {
+         case 1: /* Speed */
+         case 8: /* Jump */
+            this.type = PotionEffectType.SLOW;
+            break;
+         case 6: /* Healing */
+         case 19: /* Poison */
+            this.type = PotionEffectType.HARM;
+            break;
+         case 16: /* Night Vision */
+            this.type = PotionEffectType.INVISIBILITY;
+            break;
+
+      }
+   }
+
    public void setTier(int tier)
    {
       this.tier = tier;
-      this.extended = false;
+      if (Config.getInstance().usingConflictingModifiers())
+      {
+         this.extended = false;
+      }
    }
 
    public int getDurationSeconds()
@@ -113,24 +144,6 @@ public class CustomPotion
       return seconds;
    }
 
-   private boolean isCustomEffect()
-   {
-      if (type == null)
-      {
-         return false;
-      }
-      return type.equals(PotionEffectType.FAST_DIGGING)
-              || type.equals(PotionEffectType.SLOW_DIGGING)
-              || type.equals(PotionEffectType.SATURATION)
-              || type.equals(PotionEffectType.HUNGER)
-              || type.equals(PotionEffectType.ABSORPTION)
-              || type.equals(PotionEffectType.HEALTH_BOOST)
-              || type.equals(PotionEffectType.BLINDNESS)
-              || type.equals(PotionEffectType.CONFUSION)
-              || type.equals(PotionEffectType.DAMAGE_RESISTANCE)
-              || type.equals(PotionEffectType.WITHER);
-   }
-
    public ItemStack getItem()
    {
       ItemStack potion;
@@ -138,12 +151,13 @@ public class CustomPotion
       int adjusted_tier;
 
       potion = new ItemStack(Material.POTION, 1, getData());
-      if (isCustomEffect())
+      if (type != null)
       {
          meta = (PotionMeta) potion.getItemMeta();
          adjusted_tier = PotionInfo.hasTiers(type) ? tier - 1 : 0;
          meta.addCustomEffect(new PotionEffect(type, getDurationSeconds() * 20, adjusted_tier), true);
-         meta.setDisplayName(ChatColor.WHITE + MessageConfig.getInstance().getPotionName(type));
+         meta.setDisplayName(ChatColor.WHITE +
+                 (splash ? "Splash " : "") + MessageConfig.getInstance().getPotionName(type));
          potion.setItemMeta(meta);
       }
 
@@ -174,13 +188,9 @@ public class CustomPotion
             default: return (short) 0;
          }
       };
-      if (isAwkwardPotion())
-      {
-         return 16;
-      }
       if (type == null)
       {
-         return (short) (extended ? 64 : tier > 1 ? 32 : 0);
+         return (short) (extended ? 64 : tier > 1 ? 32 : isAwkward()  ? 16 : 0);
       }
       data = dt.apply(type);
       if (splash)
@@ -209,7 +219,6 @@ public class CustomPotion
       }
       if (!(item.getItemMeta() instanceof PotionMeta))
       {
-         PotionsPlugin.getInstance().getLogger().warning("Cannot create Custom potion: No potionmeta found");
          return null;
       }
       if (item.getDurability() == 16)
@@ -230,23 +239,68 @@ public class CustomPotion
 
    public boolean canBeBrewed(ItemStack ingredient)
    {
-      return ingredient != null && (
-              (ingredient.getType() == Material.NETHER_WARTS && isWater())
-              || (Brewing.getInstance().isIngredient(ingredient) && isAwkwardPotion())
-              || (ingredient.getType() == Material.SULPHUR && !splash)
-              || (ingredient.getType() == Material.REDSTONE && !extended)
-              || (ingredient.getType() == Material.GLOWSTONE_DUST && tier < 2)
-              || (tier < Config.getInstance().getModifierLevel(ingredient))
-      );
-   }
-
-   boolean isAwkwardPotion()
-   {
-      return type == null && tier == 0;
+      if (ingredient == null)
+      {
+         return false;
+      }
+      if (isWater())
+      {
+         switch(ingredient.getType())
+         {
+            case NETHER_STALK:
+            case SULPHUR:
+            case REDSTONE:
+            case GLOWSTONE_DUST:
+            case SPIDER_EYE:
+            case MAGMA_CREAM:
+            case GHAST_TEAR:
+            case SUGAR:
+            case RABBIT_FOOT:
+            case BLAZE_POWDER:
+            case SPECKLED_MELON:
+            case FERMENTED_SPIDER_EYE:
+               return true;
+            default: return false;
+         }
+      }
+      if (isAwkward())
+      {
+         return Brewing.getInstance().isIngredient(ingredient);
+      }
+      switch(ingredient.getType())
+      {
+         case REDSTONE:
+            return !extended;
+         case GLOWSTONE_DUST:
+            return tier < 2;
+         case SULPHUR:
+            return !splash;
+         case FERMENTED_SPIDER_EYE:
+            return type != null && (type.equals(PotionEffectType.NIGHT_VISION)
+                    || type.equals(PotionEffectType.POISON) || type.equals(PotionEffectType.HEAL)
+                    || type.equals(PotionEffectType.SPEED) || type.equals(PotionEffectType.JUMP));
+      }
+      return (tier < Config.getInstance().getModifierLevel(ingredient));
    }
 
    boolean isWater()
    {
       return type == null && tier == 1;
+   }
+
+   boolean isAwkward()
+   {
+      return type == null && tier <= 0;
+   }
+
+   @Override
+   public String toString()
+   {
+      return "POTION{type="
+              + (type == null ? "none": type.getName())
+              + (tier != 1 ? ", tier=" + tier : "")
+              + (extended ? ", extended" : "")
+              + (splash ? ", splash": "")
+              + "}";
    }
 }
