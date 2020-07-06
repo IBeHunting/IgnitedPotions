@@ -1,7 +1,7 @@
 name: IgnitedPotions
 description: A re-model of minecraft's brewing, with permissions, new effects, and custom modifiers.
 author: IBeHunting
-version: 1.1.0
+version: v1.2.1-beta
 api-version: 1.8.8
 main: io.github.IBeHunting.IgnitedPotions.PotionsPlugin
 

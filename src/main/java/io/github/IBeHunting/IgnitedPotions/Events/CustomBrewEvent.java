@@ -15,7 +15,7 @@ public class CustomBrewEvent extends Event implements Cancellable
    private static final HandlerList HANDLERS = new HandlerList();
    private boolean cancelled;
 
-   private BrewingStand stand;
+   private CustomBrewingStand stand;
    private Player player;
    private ItemStack ingredient;
    private CustomPotion[] potions;
@@ -25,7 +25,7 @@ public class CustomBrewEvent extends Event implements Cancellable
       this.player = player;
       this.ingredient = inv.getIngredient();
       this.potions = new CustomPotion[inv.getPotions().length];
-      this.stand = inv.getStand();
+      this.stand = inv;
       for (int i = 0; i < potions.length; i++)
       {
          potions[i] = CustomPotion.fromItem(inv.getPotions()[i]);
@@ -62,7 +62,7 @@ public class CustomBrewEvent extends Event implements Cancellable
       return potions;
    }
 
-   public BrewingStand getStand()
+   public CustomBrewingStand getStand()
    {
       return stand;
    }
