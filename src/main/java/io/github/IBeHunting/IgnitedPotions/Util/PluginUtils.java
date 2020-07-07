@@ -70,9 +70,18 @@ public class PluginUtils
       return player.hasPermission(getPermission(ingredient));
    }
 
-   public String getPermission (ItemStack ingredient)
+   public String getPermission(ItemStack ingredient)
    {
+      if (ingredient == null)
+      {
+         return null;
+      }
       PotionEffectType type = Config.getInstance().getResultingPotion(ingredient);
+      return getPermission(type);
+   }
+
+   public String getPermission (PotionEffectType type)
+   {
       if (type == null)
       {
          return null;
