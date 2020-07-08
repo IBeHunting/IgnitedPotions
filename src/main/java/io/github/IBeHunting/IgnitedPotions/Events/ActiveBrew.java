@@ -80,7 +80,7 @@ public class ActiveBrew
 
    private void finish()
    {
-      CustomPotion[] results;
+      int slot = 0;
       BREWS.remove(loc);
       this.stand.setProgress(-1);
       this.task.cancel();
@@ -88,14 +88,14 @@ public class ActiveBrew
       Bukkit.getPluginManager().callEvent(event);
       if (!event.isCancelled())
       {
-         results = Brewing.getInstance().apply(event.getPotions(), event.getIngredient());
          decrementIngredient();
-         for (int i = 0; i < results.length; i++)
+         for (CustomPotion potion : event.getResults())
          {
-            if (results[i] != null)
+            if (potion != null)
             {
-               stand.setPotion(i, results[i].getItem());
+               stand.setPotion(slot, potion.getItem());
             }
+            slot++;
          }
       }
 

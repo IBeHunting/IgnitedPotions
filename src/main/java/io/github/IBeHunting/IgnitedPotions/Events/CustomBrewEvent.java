@@ -1,5 +1,6 @@
 package io.github.IBeHunting.IgnitedPotions.Events;
 
+import io.github.IBeHunting.IgnitedPotions.CustomPotions.Brewing;
 import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomBrewingStand;
 import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomPotion;
 import org.bukkit.block.BrewingStand;
@@ -19,6 +20,7 @@ public class CustomBrewEvent extends Event implements Cancellable
    private Player player;
    private ItemStack ingredient;
    private CustomPotion[] potions;
+   private CustomPotion[] results;
 
    CustomBrewEvent(Player player, CustomBrewingStand inv)
    {
@@ -30,6 +32,7 @@ public class CustomBrewEvent extends Event implements Cancellable
       {
          potions[i] = CustomPotion.fromItem(inv.getPotions()[i]);
       }
+      this.results = Brewing.getInstance().apply(potions, ingredient);
    }
 
    public HandlerList getHandlers()
@@ -50,6 +53,11 @@ public class CustomBrewEvent extends Event implements Cancellable
    public boolean isCancelled()
    {
       return cancelled;
+   }
+
+   public CustomPotion[] getResults()
+   {
+      return results;
    }
 
    public ItemStack getIngredient()
