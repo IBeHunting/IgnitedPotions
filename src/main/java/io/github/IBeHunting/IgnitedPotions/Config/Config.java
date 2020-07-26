@@ -1,17 +1,17 @@
 package io.github.IBeHunting.IgnitedPotions.Config;
 
+import io.github.IBeHunting.IgnitedPotions.CustomPotions.Brewing;
 import io.github.IBeHunting.IgnitedPotions.PotionsPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffectType;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -138,10 +138,10 @@ public class Config implements PluginConfig
       }
    }
 
-   public PotionEffectType getResultingPotion(ItemStack item)
+   public PotionEffectType getResultingPotion(ItemStack ingredient)
    {
       /* Create a new item with amount set to 1 */
-      ItemStack type = new ItemStack(item.getType(), 1, item.getDurability());
+      ItemStack type = new ItemStack(ingredient.getType(), 1, ingredient.getDurability());
       return ingredients.get(type);
    }
 

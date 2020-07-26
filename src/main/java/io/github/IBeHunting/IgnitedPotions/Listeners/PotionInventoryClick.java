@@ -1,8 +1,7 @@
 package io.github.IBeHunting.IgnitedPotions.Listeners;
 
-import io.github.IBeHunting.IgnitedPotions.Config.Config;
+import io.github.IBeHunting.IgnitedPotions.CustomPotions.Brewing;
 import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomBrewingStand;
-import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomPotion;
 import io.github.IBeHunting.IgnitedPotions.Events.ActiveBrew;
 import io.github.IBeHunting.IgnitedPotions.PotionsPlugin;
 import org.bukkit.Bukkit;
@@ -13,7 +12,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffectType;
 
 public class PotionInventoryClick implements Listener {
    @EventHandler
@@ -43,7 +41,7 @@ public class PotionInventoryClick implements Listener {
       /* Set the display of the brewing stand to be consistent with the inventory */
       Bukkit.getScheduler().runTaskLater(PotionsPlugin.getInstance(), () -> {
          updateBrewingStands(stand);
-         if (canStartBrew(player, stand))
+         if (Brewing.getInstance().canStartBrew(player, stand))
          {
             new ActiveBrew(stand, player).start();
          }
@@ -59,19 +57,6 @@ public class PotionInventoryClick implements Listener {
       {
          stand.getStand().getInventory().setItem(potion_slot++, potion);
       }
-   }
-
-   private boolean canStartBrew(Player player, CustomBrewingStand stand)
-   {
-      ItemStack ingredient;
-      if (!brewable(stand))
-      {
-         return false;
-      }
-      ingredient = stand.getIngredient();
-      return  PotionsPlugin.util().checkPermission(player, ingredient)
-              && !isDisabled(ingredient)
-              && !ActiveBrew.isActive(stand.getStand().getLocation());
    }
 
    private void tryAddIngredient(InventoryClickEvent event, CustomBrewingStand stand, ItemStack ing)
@@ -120,6 +105,10 @@ public class PotionInventoryClick implements Listener {
       {
          case RIGHT:
          case LEFT:
+            if (CustomBrewingStand.isPotionSlot(event.getSlot())
+                    && !PotionsPlugin.util().isNone(event.getCursor())
+                    && event.getCursor().getType() != Material.POTION)
+               return false;
          case NUMBER_KEY:
          case DROP:
          case SHIFT_LEFT:
@@ -129,29 +118,5 @@ public class PotionInventoryClick implements Listener {
                     || CustomBrewingStand.isPotionSlot(event.getSlot());
          default: return false;
       }
-   }
-
-   private boolean isDisabled(ItemStack item)
-   {
-      PotionEffectType effect = Config.getInstance().getResultingPotion(item);
-      if (effect == null)
-      {
-         return false;
-      }
-      return Config.getInstance().isDisabled(effect);
-   }
-
-   private boolean brewable(CustomBrewingStand stand)
-   {
-      CustomPotion pot;
-      for (ItemStack item : stand.getPotions())
-      {
-         pot = CustomPotion.fromItem(item);
-         if (pot != null && pot.canBeBrewed(stand.getIngredient()))
-         {
-            return true;
-         }
-      }
-      return false;
    }
 }

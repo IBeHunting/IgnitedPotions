@@ -283,12 +283,12 @@ public class CustomPotion
       return (tier < Config.getInstance().getModifierLevel(ingredient));
    }
 
-   boolean isWater()
+   public boolean isWater()
    {
       return type == null && tier == 1;
    }
 
-   boolean isAwkward()
+   public boolean isAwkward()
    {
       return type == null && tier <= 0;
    }

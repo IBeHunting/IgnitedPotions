@@ -2,7 +2,6 @@ package io.github.IBeHunting.IgnitedPotions.Events;
 
 import io.github.IBeHunting.IgnitedPotions.Config.Config;
 import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomBrewingStand;
-import io.github.IBeHunting.IgnitedPotions.CustomPotions.Brewing;
 import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomPotion;
 import io.github.IBeHunting.IgnitedPotions.PotionsPlugin;
 import org.bukkit.Bukkit;
@@ -35,24 +34,14 @@ public class ActiveBrew
       this.time = this.remaining = Config.getInstance().getBrewingTicks();
    }
 
-   public static boolean isActive(Location loc)
-   {
-      return BREWS.containsKey(loc);
-   }
-
-   public static ActiveBrew get(Location loc)
-   {
-      return BREWS.get(loc);
-   }
-
    public double getProgress()
    {
       return 1 - (double) remaining / time;
    }
 
-   public CustomBrewingStand getStand()
+   public static boolean isActive(BrewingStand stand)
    {
-      return stand;
+      return BREWS.containsKey(stand.getLocation());
    }
 
    public void start()

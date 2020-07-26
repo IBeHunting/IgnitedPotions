@@ -1,9 +1,12 @@
 package io.github.IBeHunting.IgnitedPotions.Util;
 
-import io.github.IBeHunting.IgnitedPotions.Config.Config;
+import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomPotion;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.potion.PotionEffectType;
 
 public class PluginUtils
@@ -60,24 +63,25 @@ public class PluginUtils
       return sb.toString();
    }
 
-   public boolean checkPermission(CommandSender player, ItemStack ingredient)
+   public boolean checkPermission(CommandSender player, PotionEffectType effect)
    {
-      String perm = getPermission(ingredient);
+      String perm = getPermission(effect);
+      Permission p;
       if (perm == null)
       {
          return true;
       }
-      return player.hasPermission(getPermission(ingredient));
-   }
-
-   public String getPermission(ItemStack ingredient)
-   {
-      if (ingredient == null)
+      if (player == null)
       {
-         return null;
+         p = Bukkit.getPluginManager().getPermission(perm);
+         if (p == null)
+         {
+            Bukkit.getLogger().warning("No permission found for effect " + effect.getName());
+            return true;
+         }
+         return p.getDefault() == PermissionDefault.TRUE;
       }
-      PotionEffectType type = Config.getInstance().getResultingPotion(ingredient);
-      return getPermission(type);
+      return player.hasPermission(perm);
    }
 
    public String getPermission (PotionEffectType type)
@@ -89,19 +93,23 @@ public class PluginUtils
       switch (type.getId())
       {
          case 1: return "potions.brew.speed";
+         case 2: return "potions.brew.slowness";
          case 3: return "potions.brew.haste";
          case 4: return "potions.brew.mining_fatigue";
          case 5: return "potions.brew.strength";
          case 6: return "potions.brew.instant_health";
+         case 7: return "potions.brew.instant_damage";
          case 8: return "potions.brew.jump_boost";
          case 9: return "potions.brew.nausea";
          case 10: return "potions.brew.regeneration";
          case 11: return "potions.brew.resistance";
          case 12: return "potions.brew.fire_resistance";
          case 13: return "potions.brew.water_breathing";
+         case 14: return "potions.brew.invisibility";
          case 15: return "potions.brew.blindness";
          case 16: return "potions.brew.night_vision";
          case 17: return "potions.brew.hunger";
+         case 18: return "potions.brew.invisibility";
          case 19: return "potions.brew.poison";
          case 20: return "potions.brew.wither";
          case 21: return "potions.brew.health_boost";
@@ -109,5 +117,34 @@ public class PluginUtils
          case 23: return "potions.brew.saturation";
          default: return null;
       }
+   }
+
+   public PotionEffectType getCorruptedEffect(CustomPotion potion)
+   {
+      if (potion.isWater())
+      {
+         return PotionEffectType.WEAKNESS;
+      }
+      if (potion.getType() == null)
+      {
+         return null;
+      }
+      switch (potion.getType().getId())
+      {
+         case 1: /* Orig = speed */
+         case 8: /* Orig = Jump boost */
+            return PotionEffectType.SLOW;
+         case 6: /* Orig = Inst. Health */
+         case 19: /* Orig = Poison */
+            return PotionEffectType.HARM;
+         case 16: /* Orig = Night Vision */
+            return PotionEffectType.INVISIBILITY;
+         default: return null;
+      }
+   }
+
+   public boolean isNone (ItemStack item)
+   {
+      return item == null || item.getType() == Material.AIR;
    }
 }

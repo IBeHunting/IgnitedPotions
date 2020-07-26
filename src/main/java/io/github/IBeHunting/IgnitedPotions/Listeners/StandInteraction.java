@@ -1,29 +1,34 @@
 package io.github.IBeHunting.IgnitedPotions.Listeners;
 
 import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomBrewingStand;
-import io.github.IBeHunting.IgnitedPotions.Events.ActiveBrew;
+import io.github.IBeHunting.IgnitedPotions.Util.HopperMovementHandler;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.BrewingStand;
+import org.bukkit.block.*;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Iterator;
+import java.util.*;
 
 public class StandInteraction implements Listener
 {
+
+   private Map<Location, CustomBrewingStand> STANDS = new HashMap<>();
+
    @EventHandler
    public void onStandOpen(PlayerInteractEvent event)
    {
       BrewingStand stand;
       if (event.getAction() == Action.RIGHT_CLICK_BLOCK
+              && !event.getPlayer().isSneaking()
               && event.getClickedBlock() != null
               && event.getClickedBlock().getState() instanceof BrewingStand)
       {
@@ -59,18 +64,40 @@ public class StandInteraction implements Listener
       }
    }
 
+   @EventHandler (priority = EventPriority.MONITOR)
+   public void onHopperMovement(InventoryMoveItemEvent event)
+   {
+      CustomBrewingStand cbs;
+      ItemStack item = event.getItem();
+      if (event.getSource().getHolder() instanceof BrewingStand)
+      {
+         event.setCancelled(true);
+         cbs = getBrewingInventory((BrewingStand) event.getSource().getHolder());
+         HopperMovementHandler.getInstance().handleTransferFrom(cbs, item, event.getDestination());
+      }
+      if (event.getDestination().getHolder() instanceof BrewingStand)
+      {
+         event.setCancelled(true);
+         cbs = getBrewingInventory((BrewingStand) event.getDestination().getHolder());
+         HopperMovementHandler.getInstance().handleTransferTo(cbs, item, event.getSource());
+      }
+   }
+
    private void removeStand(BrewingStand stand)
    {
       Location loc = stand.getLocation();
       CustomBrewingStand custom = getBrewingInventory(stand);
+      List<HumanEntity> viewers;
 
       loc.getWorld().dropItem(loc, new ItemStack(Material.BREWING_STAND_ITEM));
 
       stand.getInventory().clear();
       stand.getBlock().setType(Material.AIR);
+      STANDS.remove(loc);
 
       /* Anyone viewing the brewing stand must close the inventory */
-      stand.getInventory().getViewers().forEach(HumanEntity::closeInventory);
+      viewers = new ArrayList<>(custom.getInventory().getViewers());
+      viewers.forEach(HumanEntity::closeInventory);
 
       if (custom.getIngredient() != null && custom.getIngredient().getType() != Material.AIR)
       {
@@ -88,10 +115,13 @@ public class StandInteraction implements Listener
 
    private CustomBrewingStand getBrewingInventory(BrewingStand stand)
    {
-      if (ActiveBrew.isActive(stand.getLocation()))
+      CustomBrewingStand cbs;
+      if (STANDS.containsKey(stand.getLocation()))
       {
-         return ActiveBrew.get(stand.getLocation()).getStand();
+         return STANDS.get(stand.getLocation());
       }
-      return new CustomBrewingStand(stand);
+      cbs = new CustomBrewingStand(stand);
+      STANDS.put(stand.getLocation(), cbs);
+      return cbs;
    }
 }

@@ -1,6 +1,10 @@
 package io.github.IBeHunting.IgnitedPotions.CustomPotions;
 
 import io.github.IBeHunting.IgnitedPotions.Config.Config;
+import io.github.IBeHunting.IgnitedPotions.Events.ActiveBrew;
+import io.github.IBeHunting.IgnitedPotions.PotionsPlugin;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
@@ -22,32 +26,41 @@ public class Brewing
       return i;
    }
 
-   public CustomPotion[] apply(CustomPotion[] orig, ItemStack ingredient)
+   public CustomPotion[] apply(Player player, CustomPotion[] orig, ItemStack ingredient)
    {
       CustomPotion[] results = new CustomPotion[orig.length];
-      CustomPotion cp;
+      CustomPotion before, after;
       for (int i = 0; i < orig.length; i++)
       {
-         cp = orig[i];
-         if (cp == null)
+         before = orig[i];
+         if (before == null)
          {
             continue;
          }
-         if (cp.isAwkward())
+         if (before.isAwkward())
          {
-            results[i] = handleAwkward(cp, ingredient);
+            after = handleAwkward(before, ingredient);
          }
-         else if (cp.isWater())
+         else if (before.isWater())
          {
-            results[i] = handleWater(ingredient);
+            after = handleWater(before, ingredient);
          }
-         else if (cp.getType() != null) /* An actual potion, not water/mundane/awkward/thick */
+         else if (before.getType() != null) /* An actual potion, not water/mundane/awkward/thick */
          {
-            results[i] = handlePotion(cp, ingredient);
+            after = handlePotion(before, ingredient);
          }
          else
          {
-            results[i] = cp;
+            continue;
+         }
+
+         if (PotionsPlugin.util().checkPermission(player, after.getType()))
+         {
+            results[i] = after;
+         }
+         else
+         {
+            results[i] = before;
          }
       }
       return results;
@@ -82,7 +95,7 @@ public class Brewing
       return orig;
    }
 
-   private CustomPotion handleWater(ItemStack ingredient)
+   private CustomPotion handleWater(CustomPotion orig, ItemStack ingredient)
    {
       switch(ingredient.getType())
       {
@@ -134,5 +147,61 @@ public class Brewing
             return true;
       }
       return Config.getInstance().getModifierLevel(item) > 0;
+   }
+
+   public boolean canStartBrew(Player player, CustomBrewingStand stand)
+   {
+      return brewable(stand)
+              && !ActiveBrew.isActive(stand.getStand())
+              && hasPermission(player, stand.getIngredient(), stand.getPotions());
+   }
+
+   private boolean brewable(CustomBrewingStand stand)
+   {
+      CustomPotion pot;
+      for (ItemStack item : stand.getPotions())
+      {
+         pot = CustomPotion.fromItem(item);
+         if (pot != null && pot.canBeBrewed(stand.getIngredient()))
+         {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   private boolean hasPermission(Player player, ItemStack ingredient, ItemStack[] potions)
+   {
+      PotionEffectType result = Config.getInstance().getResultingPotion(ingredient);
+      CustomPotion cp;
+      if (result != null)
+      {
+         return PotionsPlugin.util().checkPermission(player, result)
+                 && !Config.getInstance().isDisabled(result);
+      }
+      if (ingredient.getType() == Material.FERMENTED_SPIDER_EYE)
+      {
+         /* If the player has permission to corrupt any of the 3 potions, a brew can start */
+         for (ItemStack potion : potions)
+         {
+            cp = CustomPotion.fromItem(potion);
+            if (cp == null)
+            {
+               continue;
+            }
+            result = PotionsPlugin.util().getCorruptedEffect(cp);
+            if (result == null)
+            {
+               continue;
+            }
+            if (PotionsPlugin.util().checkPermission(player, result)
+                    && !Config.getInstance().isDisabled(result))
+            {
+               return true;
+            }
+         }
+         return false;
+      }
+      return true;
    }
 }

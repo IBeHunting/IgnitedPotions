@@ -1,7 +1,6 @@
 package io.github.IBeHunting.IgnitedPotions.CustomPotions;
 
 import io.github.IBeHunting.IgnitedPotions.Config.MessageConfig;
-import io.github.IBeHunting.IgnitedPotions.Events.ActiveBrew;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BrewingStand;
@@ -10,6 +9,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -84,6 +84,51 @@ public class CustomBrewingStand implements InventoryHolder
       }
       inv.setItem(POTION_SLOTS[slot], potion);
       stand.getInventory().setItem(slot, potion);
+   }
+
+   public boolean addItem(ItemStack item)
+   {
+      ItemStack current;
+      if (!(item.getItemMeta() instanceof PotionMeta))
+      {
+         current = getIngredient();
+         if (current == null || current.getType() == Material.AIR)
+         {
+            setIngredient(item);
+            return true;
+         }
+         if (current.isSimilar(item) && current.getAmount() + item.getAmount() <= current.getMaxStackSize())
+         {
+            current.setAmount(current.getAmount() + item.getAmount());
+            setIngredient(current);
+            return true;
+         }
+         return false;
+      }
+      for (int i = 0; i < POTION_SLOTS.length; i++)
+      {
+         current = inv.getItem(POTION_SLOTS[i]);
+         if (current == null || current.getType() == Material.AIR)
+         {
+            setPotion(i, item);
+            return true;
+         }
+      }
+      return false;
+   }
+
+   public boolean removePotion(ItemStack potion)
+   {
+      ItemStack[] orig = getPotions();
+      for (int i = 0; i < orig.length; i++)
+      {
+         if (orig[i] != null && orig[i].equals(potion))
+         {
+            setPotion(i, null);
+            return true;
+         }
+      }
+      return false;
    }
 
    public ItemStack[] getPotions()

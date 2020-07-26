@@ -75,7 +75,7 @@ public class PotionCommand implements CommandExecutor
       Map<String, ItemStack> recipes = new HashMap<>();
       for (Map.Entry<ItemStack, PotionEffectType> entry : Config.getInstance().getRecipies().entrySet())
       {
-         if (PotionsPlugin.util().checkPermission(sender, entry.getKey()))
+         if (PotionsPlugin.util().checkPermission(sender, entry.getValue()))
          {
             recipes.put(MessageConfig.getInstance().getPotionName(entry.getValue()), entry.getKey());
          }

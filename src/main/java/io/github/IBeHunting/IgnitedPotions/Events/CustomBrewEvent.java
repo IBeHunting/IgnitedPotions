@@ -3,12 +3,10 @@ package io.github.IBeHunting.IgnitedPotions.Events;
 import io.github.IBeHunting.IgnitedPotions.CustomPotions.Brewing;
 import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomBrewingStand;
 import io.github.IBeHunting.IgnitedPotions.CustomPotions.CustomPotion;
-import org.bukkit.block.BrewingStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.ItemStack;
 
 public class CustomBrewEvent extends Event implements Cancellable
@@ -32,7 +30,7 @@ public class CustomBrewEvent extends Event implements Cancellable
       {
          potions[i] = CustomPotion.fromItem(inv.getPotions()[i]);
       }
-      this.results = Brewing.getInstance().apply(potions, ingredient);
+      this.results = Brewing.getInstance().apply(player, potions, ingredient);
    }
 
    public HandlerList getHandlers()

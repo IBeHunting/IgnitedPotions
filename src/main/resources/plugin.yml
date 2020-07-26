@@ -43,6 +43,10 @@ permissions:
       potions.brew.poison: true
       potions.brew.water_breathing: true
       potions.brew.night_vision: true
+      potions.brew.weakness: true
+      potions.brew.invisibility: true
+      potions.brew.instant_damage: true
+      potions.brew.slowness: true
 
   potions.brew.haste:
     default: op
@@ -81,4 +85,12 @@ permissions:
   potions.brew.night_vision:
     default: true
   potions.brew.water_breathing:
+    default: true
+  potions.brew.weakness:
+    default: true
+  potions.brew.invisibility:
+    default: true
+  potions.brew.instant_damage:
+    default: true
+  potions.brew.slowness:
     default: true
